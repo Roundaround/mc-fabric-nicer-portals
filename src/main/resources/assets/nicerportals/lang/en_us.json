@@ -4,5 +4,6 @@
   "nicerportals.dedupe_break_sound.label": "Dedupe break sound",
   "nicerportals.single.title": "Single player only",
   "nicerportals.prevent_portal_spawns.label": "Prevent portal spawns",
-  "nicerportals.crying_obsidian.label": "Allow crying obsidian"
+  "nicerportals.crying_obsidian.label": "Allow crying obsidian",
+  "nicerportals.any_shape.label": "Allow any portal shape"
 }

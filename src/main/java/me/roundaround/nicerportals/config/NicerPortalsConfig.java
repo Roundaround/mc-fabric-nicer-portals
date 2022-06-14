@@ -9,6 +9,7 @@ public class NicerPortalsConfig extends ModConfig {
   public final BooleanConfigOption DEDUPE_BREAK_SOUND;
   public final BooleanConfigOption PREVENT_PORTAL_SPAWNS;
   public final BooleanConfigOption CRYING_OBSIDIAN;
+  public final BooleanConfigOption ANY_SHAPE;
 
   public NicerPortalsConfig() {
     super(NicerPortalsMod.MOD_ID);
@@ -41,6 +42,14 @@ public class NicerPortalsConfig extends ModConfig {
         BooleanConfigOption
             .yesNoBuilder("cryingObsidian", "nicerportals.crying_obsidian.label")
             .setComment("Whether to allow using crying obsidian for portals.\n"
+                + "Server-side & single player only.")
+            .build());
+
+    ANY_SHAPE = registerConfigOption(
+        "single", // The config screen group is only relevant for single player
+        BooleanConfigOption
+            .yesNoBuilder("anyShape", "nicerportals.any_shape.label")
+            .setComment("Whether to allow portals in any shape and size.\n"
                 + "Server-side & single player only.")
             .build());
   }
