@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "nicerportals",
+  "version": "${version}",
+  "name": "Nicer Portals",
+  "description": "Various small improvements to portals.",
+  "authors": [
+    "Roundaround"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": ""
+  },
+  "license": "MIT",
+  "icon": "assets/nicerportals/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.roundaround.nicerportals.NicerPortalsMod"
+    ],
+    "modmenu": [
+      "me.roundaround.nicerportals.compat.modmenu.ModMenuImpl"
+    ]
+  },
+  "mixins": [
+    "nicerportals.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.13.3",
+    "minecraft": "1.19.x",
+    "java": ">=17",
+    "roundalib": ">=0.1.8"
+  }
+}
