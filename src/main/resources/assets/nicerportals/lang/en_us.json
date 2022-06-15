@@ -5,5 +5,7 @@
   "nicerportals.single.title": "Single player only",
   "nicerportals.prevent_portal_spawns.label": "Prevent portal spawns",
   "nicerportals.crying_obsidian.label": "Allow crying obsidian",
-  "nicerportals.any_shape.label": "Allow any portal shape"
+  "nicerportals.any_shape.label": "Allow any portal shape",
+  "nicerportals.max_size.label": "Maximum number of portal blocks",
+  "nicerportals.enforce_minimum.label": "Require at least 1 wide x 2 tall"
 }
