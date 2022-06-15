@@ -26,6 +26,7 @@ import net.minecraft.world.dimension.AreaHelper;
 public abstract class AreaHelperMixin {
   private boolean valid = false;
   HashSet<BlockPos> validPortalPositions = new HashSet<>();
+  int portalBlockCount = 0;
 
   @Shadow
   WorldAccess world;
@@ -59,7 +60,7 @@ public abstract class AreaHelperMixin {
       return;
     }
 
-    NicerPortalsMod.LOGGER.info("Constructor called");
+    // TODO: Look into caching the AreaHelper reference in the block somehow
     valid = checkAreaForPortalValidity(startPos, axis);
   }
 
@@ -95,6 +96,10 @@ public abstract class AreaHelperMixin {
         validPortalPositions.add(pos);
         if (validPortalPositions.size() > 2048) {
           return false;
+        }
+
+        if (world.getBlockState(pos).isOf(Blocks.NETHER_PORTAL)) {
+          portalBlockCount++;
         }
 
         if (!minSizeFound && (validPortalPositions.contains(pos.up()) || validPortalPositions.contains(pos.down()))) {
@@ -157,6 +162,6 @@ public abstract class AreaHelperMixin {
       return;
     }
 
-    info.setReturnValue(valid);
+    info.setReturnValue(valid && validPortalPositions.size() == portalBlockCount);
   }
 }
