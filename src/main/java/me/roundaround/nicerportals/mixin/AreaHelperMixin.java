@@ -23,10 +23,10 @@ import net.minecraft.world.dimension.AreaHelper;
 
 @Mixin(AreaHelper.class)
 public abstract class AreaHelperMixin {
-  // private boolean valid = false;
+  private boolean valid = false;
 
-  // @Shadow
-  // Direction negativeDir;
+  @Shadow
+  Direction negativeDir;
 
   @Inject(method = "method_30487", at = @At(value = "HEAD"), cancellable = true)
   private static void isValidFrameBlock(
@@ -44,97 +44,102 @@ public abstract class AreaHelperMixin {
     }
   }
 
-  // @Inject(method = "<init>", at = @At(value = "TAIL"))
-  // private void constructor(WorldAccess world, BlockPos startPos, Direction.Axis axis, CallbackInfo info) {
-  //   if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-  //       || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
-  //     return;
-  //   }
+  @Inject(method = "<init>", at = @At(value = "TAIL"))
+  private void constructor(WorldAccess world, BlockPos startPos, Direction.Axis axis, CallbackInfo info) {
+    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
+        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+      return;
+    }
 
-  //   long startTime = Util.getMeasuringTimeMs();
+    long startTime = Util.getMeasuringTimeMs();
 
-  //   valid = isAreaValidForCreation(world, startPos, axis);
-  //   NicerPortalsMod.LOGGER.info("Portal area is " + (valid ? "" : "not ") + "valid.");
+    valid = isAreaValidForCreation(world, startPos, axis);
+    NicerPortalsMod.LOGGER.info("Portal area is " + (valid ? "" : "not ") + "valid.");
 
-  //   long duration = Util.getMeasuringTimeMs() - startTime;
-  //   NicerPortalsMod.LOGGER.info(String.format("Portal validity check took %dms", duration));
-  // }
+    long duration = Util.getMeasuringTimeMs() - startTime;
+    NicerPortalsMod.LOGGER.info(String.format("Portal validity check took %dms", duration));
+  }
 
-  // private boolean isAreaValidForCreation(WorldAccess world, BlockPos startPos, Direction.Axis axis) {
-  //   HashSet<BlockPos> positionsChecked = new HashSet<>();
-  //   HashSetQueue<BlockPos> positionsToCheck = new HashSetQueue<>();
+  private boolean isAreaValidForCreation(WorldAccess world, BlockPos startPos, Direction.Axis axis) {
+    HashSet<BlockPos> positionsChecked = new HashSet<>();
+    HashSetQueue<BlockPos> positionsToCheck = new HashSetQueue<>();
+    boolean minSizeFound = false;
+    int portalBlocksCounted = 0;
 
-  //   List<Direction> directions = List.of(
-  //       Direction.DOWN,
-  //       Direction.UP,
-  //       negativeDir,
-  //       negativeDir.getOpposite());
+    List<Direction> directions = List.of(
+        Direction.DOWN,
+        Direction.UP,
+        negativeDir,
+        negativeDir.getOpposite());
 
-  //   positionsToCheck.push(startPos);
+    positionsToCheck.push(startPos);
 
-  //   while (!positionsToCheck.isEmpty()) {
-  //     BlockPos pos = positionsToCheck.pop();
-  //     if (positionsChecked.contains(pos)) {
-  //       continue;
-  //     }
+    while (!positionsToCheck.isEmpty()) {
+      BlockPos pos = positionsToCheck.pop();
+      if (positionsChecked.contains(pos)) {
+        continue;
+      }
 
-  //     positionsChecked.add(pos);
-  //     if (positionsChecked.size() > 1024) {
-  //       return false;
-  //     }
+      boolean isOrCanBePortal = isValidPosForPortalBlock(world, pos);
+      boolean isFrameBlock = isValidFrameBlock(world, pos);
 
-  //     boolean isOrCanBePortal = isValidPosForPortalBlock(world, pos);
-  //     boolean isFrameBlock = isValidFrameBlock(world, pos);
+      if (!isOrCanBePortal && !isFrameBlock) {
+        return false;
+      }
 
-  //     if (!isOrCanBePortal && !isFrameBlock) {
-  //       return false;
-  //     }
+      if (isOrCanBePortal) {
+        if (portalBlocksCounted++ > 2048) {
+          return false;
+        }
 
-  //     if (isOrCanBePortal) {
-  //       directions.forEach((direction) -> {
-  //         BlockPos nextPos = pos.offset(direction);
-  //         if (!positionsChecked.contains(nextPos)) {
-  //           positionsToCheck.push(nextPos);
-  //         }
-  //       });
-  //     }
-  //   }
+        if (!minSizeFound && List.of(pos.up(), pos.down()).stream().anyMatch(
+            (neighborPos) -> positionsChecked.contains(neighborPos) && isValidPosForPortalBlock(world, neighborPos))) {
+          minSizeFound = true;
+        }
 
-  //   // TODO: Enforce minimum size, must be at least 1 wide, 2 tall
-  //   return true;
-  // }
+        directions.forEach((direction) -> {
+          BlockPos neighborPos = pos.offset(direction);
+          if (!positionsChecked.contains(neighborPos)) {
+            positionsToCheck.push(neighborPos);
+          }
+        });
+      }
+    }
 
-  // private static boolean isValidPosForPortalBlock(BlockView world, BlockPos pos) {
-  //   return AreaHelperAccessor.isValidStateInsidePortal(world.getBlockState(pos))
-  //       && !world.isOutOfHeightLimit(pos);
-  // }
+    return minSizeFound;
+  }
 
-  // private static boolean isValidFrameBlock(BlockView world, BlockPos pos) {
-  //   return AreaHelperAccessor.isValidStateInsidePortal(world.getBlockState(pos))
-  //       && !world.isOutOfHeightLimit(pos);
-  // }
+  private static boolean isValidPosForPortalBlock(BlockView world, BlockPos pos) {
+    return AreaHelperAccessor.isValidStateInsidePortal(world.getBlockState(pos))
+        && !world.isOutOfHeightLimit(pos);
+  }
 
-  // @Inject(method = "createPortal", at = @At(value = "HEAD"), cancellable = true)
-  // private void createPortal(CallbackInfo info) {
-  //   if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-  //       || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
-  //     return;
-  //   }
-  // }
+  private static boolean isValidFrameBlock(BlockView world, BlockPos pos) {
+    return AreaHelperAccessor.getIsValidFrameBlock().test(world.getBlockState(pos), world, pos)
+        && !world.isOutOfHeightLimit(pos);
+  }
 
-  // @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
-  // private void isValid(CallbackInfoReturnable<Boolean> info) {
-  //   if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-  //       || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
-  //     return;
-  //   }
-  // }
+  @Inject(method = "createPortal", at = @At(value = "HEAD"), cancellable = true)
+  private void createPortal(CallbackInfo info) {
+    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
+        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+      return;
+    }
+  }
 
-  // @Inject(method = "wasAlreadyValid", at = @At(value = "HEAD"), cancellable = true)
-  // private void wasAlreadyValid(CallbackInfoReturnable<Boolean> info) {
-  //   if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-  //       || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
-  //     return;
-  //   }
-  // }
+  @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
+  private void isValid(CallbackInfoReturnable<Boolean> info) {
+    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
+        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+      return;
+    }
+  }
+
+  @Inject(method = "wasAlreadyValid", at = @At(value = "HEAD"), cancellable = true)
+  private void wasAlreadyValid(CallbackInfoReturnable<Boolean> info) {
+    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
+        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+      return;
+    }
+  }
 }
