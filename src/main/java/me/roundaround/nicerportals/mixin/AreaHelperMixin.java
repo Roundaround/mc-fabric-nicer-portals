@@ -1,6 +1,7 @@
 package me.roundaround.nicerportals.mixin;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Stack;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import me.roundaround.nicerportals.NicerPortalsMod;
+import me.roundaround.nicerportals.util.HashSetQueue;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Util;
@@ -51,18 +53,24 @@ public abstract class AreaHelperMixin {
     }
 
     long startTime = Util.getMeasuringTimeMs();
+
     valid = isAreaValidForCreation(world, startPos, axis);
     NicerPortalsMod.LOGGER.info("Portal area is " + (valid ? "" : "not ") + "valid.");
-    NicerPortalsMod.LOGGER
-        .info(String.format("Portal validity check took %dms", Util.getMeasuringTimeMs() - startTime));
+
+    long duration = Util.getMeasuringTimeMs() - startTime;
+    NicerPortalsMod.LOGGER.info(String.format("Portal validity check took %dms", duration));
   }
 
   private boolean isAreaValidForCreation(WorldAccess world, BlockPos startPos, Direction.Axis axis) {
     HashSet<BlockPos> positionsChecked = new HashSet<>();
-    HashSet<BlockPos> positionsFound = new HashSet<>();
-    Stack<BlockPos> positionsToCheck = new Stack<>();
+    HashSetQueue<BlockPos> positionsToCheck = new HashSetQueue<>();
 
-    positionsFound.add(startPos);
+    List<Direction> directions = List.of(
+        Direction.DOWN,
+        Direction.UP,
+        negativeDir,
+        negativeDir.getOpposite());
+
     positionsToCheck.push(startPos);
 
     while (!positionsToCheck.isEmpty()) {
@@ -71,49 +79,40 @@ public abstract class AreaHelperMixin {
         continue;
       }
 
-      BlockState state = world.getBlockState(pos);
-
       positionsChecked.add(pos);
-
-      if (AreaHelperAccessor.getIsValidFrameBlock().test(state, world, pos)) {
-        continue;
-      }
-
-      if (!AreaHelperAccessor.isValidStateInsidePortal(state)) {
+      if (positionsChecked.size() > 1024) {
         return false;
       }
 
-      if (positionsChecked.size() > 512) {
+      boolean isOrCanBePortal = isValidPosForPortalBlock(world, pos);
+      boolean isFrameBlock = isValidFrameBlock(world, pos);
+
+      if (!isOrCanBePortal && !isFrameBlock) {
         return false;
       }
 
-      BlockPos up = pos.up();
-      if (!positionsFound.contains(up)) {
-        positionsToCheck.push(up);
-        positionsFound.add(up);
-      }
-
-      BlockPos down = pos.down();
-      if (!positionsFound.contains(down)) {
-        positionsToCheck.push(down);
-        positionsFound.add(down);
-      }
-
-      BlockPos side1 = pos.offset(negativeDir);
-      if (!positionsFound.contains(side1)) {
-        positionsToCheck.push(side1);
-        positionsFound.add(side1);
-      }
-
-      BlockPos side2 = pos.offset(negativeDir.getOpposite());
-      if (!positionsFound.contains(side2)) {
-        positionsToCheck.push(side2);
-        positionsFound.add(side2);
+      if (isOrCanBePortal) {
+        directions.forEach((direction) -> {
+          BlockPos nextPos = pos.offset(direction);
+          if (!positionsChecked.contains(nextPos)) {
+            positionsToCheck.push(nextPos);
+          }
+        });
       }
     }
 
     // TODO: Enforce minimum size, must be at least 1 wide, 2 tall
     return true;
+  }
+
+  private static boolean isValidPosForPortalBlock(BlockView world, BlockPos pos) {
+    return AreaHelperAccessor.isValidStateInsidePortal(world.getBlockState(pos))
+        && !world.isOutOfHeightLimit(pos);
+  }
+
+  private static boolean isValidFrameBlock(BlockView world, BlockPos pos) {
+    return AreaHelperAccessor.isValidStateInsidePortal(world.getBlockState(pos))
+        && !world.isOutOfHeightLimit(pos);
   }
 
   @Inject(method = "createPortal", at = @At(value = "HEAD"), cancellable = true)
