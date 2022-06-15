@@ -35,6 +35,7 @@ public class NicerPortalsConfig extends ModConfig {
         "single", // The config screen group is only relevant for single player
         BooleanConfigOption
             .yesNoBuilder("preventPortalSpawns", "nicerportals.prevent_portal_spawns.label")
+            .setDefaultValue(false)
             .setComment("Whether to prevent portals from spawning Zombified\n"
                 + "Piglins in the overworld.\n"
                 + "Server-side & single player only.")
@@ -44,6 +45,7 @@ public class NicerPortalsConfig extends ModConfig {
         "single", // The config screen group is only relevant for single player
         BooleanConfigOption
             .yesNoBuilder("cryingObsidian", "nicerportals.crying_obsidian.label")
+            .setDefaultValue(false)
             .setComment("Whether to allow using crying obsidian for portals.\n"
                 + "Server-side & single player only.")
             .build());
@@ -52,6 +54,7 @@ public class NicerPortalsConfig extends ModConfig {
         "single", // The config screen group is only relevant for single player
         BooleanConfigOption
             .yesNoBuilder("anyShape", "nicerportals.any_shape.label")
+            .setDefaultValue(false)
             .setComment("Whether to allow portals in any shape and size.\n"
                 + "Server-side & single player only.")
             .build());
