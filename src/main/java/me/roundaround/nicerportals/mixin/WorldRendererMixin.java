@@ -25,7 +25,7 @@ public abstract class WorldRendererMixin {
   @Shadow
   private ClientWorld world;
 
-  @Inject(method = "processWorldEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getSoundGroup"), cancellable = true)
+  @Inject(method = "processWorldEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getSoundGroup()Lnet/minecraft/sound/BlockSoundGroup;"), cancellable = true)
   private void processWorldEvent(int eventId, BlockPos pos, int data, CallbackInfo info) {
     if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
         || !NicerPortalsMod.CONFIG.DEDUPE_BREAK_SOUND.getValue()) {

@@ -37,7 +37,7 @@ public abstract class AreaHelperMixin {
   @Shadow
   Direction.Axis axis;
 
-  @Inject(method = "method_30487", at = @At(value = "HEAD"), cancellable = true)
+  @Inject(method = "method_30487(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Z", at = @At(value = "HEAD"), cancellable = true)
   private static void isValidFrameBlock(
       BlockState state,
       BlockView world,
