@@ -94,7 +94,7 @@ public abstract class AreaHelperMixin {
 
       if (isOrCanBePortal) {
         validPortalPositions.add(pos);
-        if (validPortalPositions.size() > 2048) {
+        if (validPortalPositions.size() > NicerPortalsMod.CONFIG.MAX_SIZE.getValue()) {
           return false;
         }
 
@@ -117,7 +117,7 @@ public abstract class AreaHelperMixin {
       }
     }
 
-    return minSizeFound;
+    return minSizeFound || !NicerPortalsMod.CONFIG.ENFORCE_MINUMUM.getValue();
   }
 
   private boolean isValidPosForPortalBlock(BlockPos pos) {
@@ -136,8 +136,8 @@ public abstract class AreaHelperMixin {
         || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
       return;
     }
-    
-    BlockState blockState = (BlockState)Blocks.NETHER_PORTAL.getDefaultState().with(NetherPortalBlock.AXIS, axis);
+
+    BlockState blockState = (BlockState) Blocks.NETHER_PORTAL.getDefaultState().with(NetherPortalBlock.AXIS, axis);
     validPortalPositions.stream().forEach((pos) -> {
       world.setBlockState(pos, blockState, Block.NOTIFY_LISTENERS | Block.FORCE_STATE);
     });

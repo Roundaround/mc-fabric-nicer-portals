@@ -11,6 +11,8 @@ public final class NicerPortalsMod implements ModInitializer {
   public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
   public static final NicerPortalsConfig CONFIG = new NicerPortalsConfig();
 
+  // TODO: Improve portal linking
+
   @Override
   public void onInitialize() {
     CONFIG.init();
