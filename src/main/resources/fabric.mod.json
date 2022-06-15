@@ -26,8 +26,8 @@
     "nicerportals.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.13.3",
-    "minecraft": "1.19.x",
+    "fabricloader": ">=0.14.6",
+    "minecraft": "1.18.x",
     "java": ">=17",
     "roundalib": ">=0.1.8"
   }

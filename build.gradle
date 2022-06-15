@@ -38,7 +38,7 @@ dependencies {
 
   // Include WorldEdit in dev environment
   modCompileOnly "com.sk89q.worldedit:worldedit-core:7.2.10"
-  modCompileOnly "com.sk89q.worldedit:worldedit-fabric-mc1.19:7.2.11-SNAPSHOT"
+  modCompileOnly "com.sk89q.worldedit:worldedit-fabric-mc1.18.2:7.2.11-SNAPSHOT"
 
   // ModMenu integration
   modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"

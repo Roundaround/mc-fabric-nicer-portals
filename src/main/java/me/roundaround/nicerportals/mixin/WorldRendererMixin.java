@@ -16,6 +16,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
 @Mixin(WorldRenderer.class)
@@ -26,7 +27,7 @@ public abstract class WorldRendererMixin {
   private ClientWorld world;
 
   @Inject(method = "processWorldEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getSoundGroup()Lnet/minecraft/sound/BlockSoundGroup;"), cancellable = true)
-  private void processWorldEvent(int eventId, BlockPos pos, int data, CallbackInfo info) {
+  private void processWorldEvent(PlayerEntity source, int eventId, BlockPos pos, int data, CallbackInfo info) {
     if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
         || !NicerPortalsMod.CONFIG.DEDUPE_BREAK_SOUND.getValue()) {
       return;
