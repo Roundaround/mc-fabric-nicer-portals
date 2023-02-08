@@ -20,10 +20,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
-import net.minecraft.world.dimension.AreaHelper;
+import net.minecraft.world.dimension.NetherPortal;
 
-@Mixin(AreaHelper.class)
-public abstract class AreaHelperMixin {
+@Mixin(NetherPortal.class)
+public abstract class NetherPortalMixin {
   private boolean valid = false;
   HashSet<BlockPos> validPortalPositions = new HashSet<>();
   int portalBlockCount = 0;
@@ -121,12 +121,12 @@ public abstract class AreaHelperMixin {
   }
 
   private boolean isValidPosForPortalBlock(BlockPos pos) {
-    return AreaHelperAccessor.isValidStateInsidePortal(world.getBlockState(pos))
+    return NetherPortalAccessor.isValidStateInsidePortal(world.getBlockState(pos))
         && !world.isOutOfHeightLimit(pos);
   }
 
   private boolean isValidFrameBlock(BlockPos pos) {
-    return AreaHelperAccessor.getIsValidFrameBlock().test(world.getBlockState(pos), world, pos)
+    return NetherPortalAccessor.getIsValidFrameBlock().test(world.getBlockState(pos), world, pos)
         && !world.isOutOfHeightLimit(pos);
   }
 
