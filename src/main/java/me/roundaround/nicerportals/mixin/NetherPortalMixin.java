@@ -117,7 +117,7 @@ public abstract class NetherPortalMixin {
       }
     }
 
-    return minSizeFound || !NicerPortalsMod.CONFIG.ENFORCE_MINUMUM.getValue();
+    return minSizeFound || !NicerPortalsMod.CONFIG.ENFORCE_MINIMUM.getValue();
   }
 
   private boolean isValidPosForPortalBlock(BlockPos pos) {

@@ -8,8 +8,9 @@
     "Roundaround"
   ],
   "contact": {
-    "homepage": "",
-    "sources": ""
+    "homepage": "https://modrinth.com/mod/nicer-portals",
+    "sources": "https://github.com/Roundaround/mc-fabric-nicer-portals",
+    "issues": "https://github.com/Roundaround/mc-fabric-nicer-portals/issues"
   },
   "license": "MIT",
   "icon": "assets/nicerportals/icon.png",
@@ -28,7 +29,6 @@
   "depends": {
     "fabricloader": ">=0.13.3",
     "minecraft": "1.19.x",
-    "java": ">=17",
-    "roundalib": "~0.2.0"
+    "java": ">=17"
   }
 }
