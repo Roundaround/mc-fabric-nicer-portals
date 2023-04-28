@@ -3,7 +3,7 @@
   "id": "nicerportals",
   "version": "${version}",
   "name": "Nicer Portals",
-  "description": "Various small improvements to portals.",
+  "description": "Various small improvements to portals.\n${library}",
   "authors": [
     "Roundaround"
   ],
