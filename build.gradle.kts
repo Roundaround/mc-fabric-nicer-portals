@@ -1,3 +1,3 @@
 plugins {
-  id("roundalib") version "0.2.14"
+  id("roundalib") version "0.2.47"
 }
