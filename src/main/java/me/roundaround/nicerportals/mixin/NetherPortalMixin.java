@@ -1,16 +1,6 @@
 package me.roundaround.nicerportals.mixin;
 
-import java.util.HashSet;
-import java.util.List;
-
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import me.roundaround.nicerportals.NicerPortalsMod;
+import me.roundaround.nicerportals.config.NicerPortalsConfig;
 import me.roundaround.nicerportals.util.HashSetQueue;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -21,30 +11,48 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.dimension.NetherPortal;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.HashSet;
+import java.util.List;
 
 @Mixin(NetherPortal.class)
 public abstract class NetherPortalMixin {
+  @Unique
   private boolean valid = false;
+  @Unique
   HashSet<BlockPos> validPortalPositions = new HashSet<>();
+  @Unique
   int portalBlockCount = 0;
 
+  @Final
   @Shadow
-  WorldAccess world;
+  private WorldAccess world;
 
+  @Final
   @Shadow
-  Direction negativeDir;
+  private Direction negativeDir;
 
+  @Final
   @Shadow
-  Direction.Axis axis;
+  private Direction.Axis axis;
 
-  @Inject(method = "method_30487(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Z", at = @At(value = "HEAD"), cancellable = true)
+  @Inject(
+      method = "method_30487(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;" +
+          "Lnet/minecraft/util/math/BlockPos;)Z", at = @At(value = "HEAD"), cancellable = true
+  )
   private static void isValidFrameBlock(
-      BlockState state,
-      BlockView world,
-      BlockPos pos,
-      CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-        || !NicerPortalsMod.CONFIG.CRYING_OBSIDIAN.getValue()) {
+      BlockState state, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> info
+  ) {
+    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
+        !NicerPortalsConfig.getInstance().cryingObsidian.getValue()) {
       return;
     }
 
@@ -55,8 +63,8 @@ public abstract class NetherPortalMixin {
 
   @Inject(method = "<init>", at = @At(value = "TAIL"))
   private void constructor(WorldAccess world, BlockPos startPos, Direction.Axis axis, CallbackInfo info) {
-    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
+        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
       return;
     }
 
@@ -64,6 +72,7 @@ public abstract class NetherPortalMixin {
     valid = checkAreaForPortalValidity(startPos, axis);
   }
 
+  @Unique
   private boolean checkAreaForPortalValidity(BlockPos startPos, Direction.Axis axis) {
     validPortalPositions.clear();
 
@@ -71,11 +80,7 @@ public abstract class NetherPortalMixin {
     HashSetQueue<BlockPos> positionsToCheck = new HashSetQueue<>();
     boolean minSizeFound = false;
 
-    List<Direction> directions = List.of(
-        Direction.DOWN,
-        Direction.UP,
-        negativeDir,
-        negativeDir.getOpposite());
+    List<Direction> directions = List.of(Direction.DOWN, Direction.UP, negativeDir, negativeDir.getOpposite());
 
     positionsToCheck.push(startPos);
 
@@ -94,7 +99,7 @@ public abstract class NetherPortalMixin {
 
       if (isOrCanBePortal) {
         validPortalPositions.add(pos);
-        if (validPortalPositions.size() > NicerPortalsMod.CONFIG.MAX_SIZE.getValue()) {
+        if (validPortalPositions.size() > NicerPortalsConfig.getInstance().maxSize.getValue()) {
           return false;
         }
 
@@ -117,38 +122,38 @@ public abstract class NetherPortalMixin {
       }
     }
 
-    return minSizeFound || !NicerPortalsMod.CONFIG.ENFORCE_MINIMUM.getValue();
+    return minSizeFound || !NicerPortalsConfig.getInstance().enforceMinimum.getValue();
   }
 
+  @Unique
   private boolean isValidPosForPortalBlock(BlockPos pos) {
-    return NetherPortalAccessor.isValidStateInsidePortal(world.getBlockState(pos))
-        && !world.isOutOfHeightLimit(pos);
+    return NetherPortalAccessor.isValidStateInsidePortal(world.getBlockState(pos)) && !world.isOutOfHeightLimit(pos);
   }
 
+  @Unique
   private boolean isValidFrameBlock(BlockPos pos) {
-    return NetherPortalAccessor.getIsValidFrameBlock().test(world.getBlockState(pos), world, pos)
-        && !world.isOutOfHeightLimit(pos);
+    return NetherPortalAccessor.getIsValidFrameBlock().test(world.getBlockState(pos), world, pos) &&
+        !world.isOutOfHeightLimit(pos);
   }
 
   @Inject(method = "createPortal", at = @At(value = "HEAD"), cancellable = true)
   private void createPortal(CallbackInfo info) {
-    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
+        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
       return;
     }
 
-    BlockState blockState = (BlockState) Blocks.NETHER_PORTAL.getDefaultState().with(NetherPortalBlock.AXIS, axis);
-    validPortalPositions.stream().forEach((pos) -> {
-      world.setBlockState(pos, blockState, Block.NOTIFY_LISTENERS | Block.FORCE_STATE);
-    });
+    BlockState blockState = Blocks.NETHER_PORTAL.getDefaultState().with(NetherPortalBlock.AXIS, axis);
+    validPortalPositions.forEach(
+        (pos) -> world.setBlockState(pos, blockState, Block.NOTIFY_LISTENERS | Block.FORCE_STATE));
 
     info.cancel();
   }
 
   @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
   private void isValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
+        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
       return;
     }
 
@@ -157,8 +162,8 @@ public abstract class NetherPortalMixin {
 
   @Inject(method = "wasAlreadyValid", at = @At(value = "HEAD"), cancellable = true)
   private void wasAlreadyValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsMod.CONFIG.MOD_ENABLED.getValue()
-        || !NicerPortalsMod.CONFIG.ANY_SHAPE.getValue()) {
+    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
+        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
       return;
     }
 

@@ -1,11 +1,11 @@
 {
   "nicerportals.config.title": "Nicer Portals Config",
-  "nicerportals.mod_enabled.label": "Mod enabled",
-  "nicerportals.dedupe_break_sound.label": "Dedupe break sound",
+  "nicerportals.modEnabled.label": "Mod enabled",
+  "nicerportals.dedupeBreakSound.label": "Dedupe break sound",
   "nicerportals.single.title": "Single player only",
-  "nicerportals.prevent_portal_spawns.label": "Prevent portal spawns",
-  "nicerportals.crying_obsidian.label": "Allow crying obsidian",
-  "nicerportals.any_shape.label": "Allow any portal shape",
-  "nicerportals.max_size.label": "Maximum number of portal blocks",
-  "nicerportals.enforce_minimum.label": "Require at least 1 wide x 2 tall"
+  "nicerportals.single.preventPortalSpawns.label": "Prevent portal spawns",
+  "nicerportals.single.cryingObsidian.label": "Allow crying obsidian",
+  "nicerportals.single.anyShape.label": "Allow any portal shape",
+  "nicerportals.single.maxSize.label": "Maximum number of portal blocks",
+  "nicerportals.single.enforceMinimum.label": "Require at least 1 wide x 2 tall"
 }
