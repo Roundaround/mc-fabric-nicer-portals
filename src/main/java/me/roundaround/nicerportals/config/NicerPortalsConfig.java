@@ -6,6 +6,7 @@ import me.roundaround.roundalib.config.manage.ModConfigImpl;
 import me.roundaround.roundalib.config.manage.store.GameScopedFileStore;
 import me.roundaround.roundalib.config.option.BooleanConfigOption;
 import me.roundaround.roundalib.config.option.IntConfigOption;
+import me.roundaround.roundalib.nightconfig.core.Config;
 
 public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileStore {
   public static NicerPortalsConfig instance = null;
@@ -26,7 +27,7 @@ public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileS
   public BooleanConfigOption enforceMinimum;
 
   private NicerPortalsConfig() {
-    super(NicerPortalsMod.MOD_ID);
+    super(NicerPortalsMod.MOD_ID, 2);
   }
 
   @Override
@@ -36,7 +37,7 @@ public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileS
         .setComment("Simple toggle for the mod! Set to false to disable everything.")
         .build());
 
-    dedupeBreakSound = this.register(BooleanConfigOption.yesNoBuilder(ConfigPath.of("dedupeBreakSound"))
+    dedupeBreakSound = this.register(BooleanConfigOption.yesNoBuilder(ConfigPath.of("client", "dedupeBreakSound"))
         .setDefaultValue(true)
         .setComment("Whether to makes portals emit only one sound when they ", "break.", "Client-side only.")
         .build());
@@ -74,5 +75,17 @@ public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileS
             "Note this value only has any effect if anyShape is true.", "Server-side & single player only."
         )
         .build());
+  }
+
+  @Override
+  public boolean performConfigUpdate(int versionSnapshot, Config inMemoryConfigSnapshot) {
+    if (versionSnapshot == 1) {
+      inMemoryConfigSnapshot.set("client.dedupeBreakSound", inMemoryConfigSnapshot.get("dedupeBreakSound"));
+      inMemoryConfigSnapshot.remove("dedupeBreakSound");
+
+      return true;
+    }
+
+    return false;
   }
 }

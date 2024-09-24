@@ -1,7 +1,8 @@
 {
   "nicerportals.config.title": "Nicer Portals Config",
   "nicerportals.modEnabled.label": "Mod enabled",
-  "nicerportals.dedupeBreakSound.label": "Dedupe break sound",
+  "nicerportals.client.title": "Client only",
+  "nicerportals.client.dedupeBreakSound.label": "Dedupe break sound",
   "nicerportals.single.title": "Single player only",
   "nicerportals.single.preventPortalSpawns.label": "Prevent portal spawns",
   "nicerportals.single.cryingObsidian.label": "Allow crying obsidian",
