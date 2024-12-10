@@ -1,6 +1,6 @@
 package me.roundaround.nicerportals;
 
-import me.roundaround.nicerportals.config.NicerPortalsConfig;
+import me.roundaround.nicerportals.config.NicerPortalsPerWorldConfig;
 import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +11,6 @@ public final class NicerPortalsMod implements ModInitializer {
 
   @Override
   public void onInitialize() {
-    NicerPortalsConfig.getInstance().init();
+    NicerPortalsPerWorldConfig.getInstance().init();
   }
 }

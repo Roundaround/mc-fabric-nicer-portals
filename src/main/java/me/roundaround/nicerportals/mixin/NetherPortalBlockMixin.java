@@ -1,6 +1,6 @@
 package me.roundaround.nicerportals.mixin;
 
-import me.roundaround.nicerportals.config.NicerPortalsConfig;
+import me.roundaround.nicerportals.config.NicerPortalsPerWorldConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.NetherPortalBlock;
 import net.minecraft.server.world.ServerWorld;
@@ -15,8 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class NetherPortalBlockMixin {
   @Inject(method = "randomTick", at = @At(value = "HEAD"), cancellable = true)
   private void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo info) {
-    if (NicerPortalsConfig.getInstance().modEnabled.getValue() &&
-        NicerPortalsConfig.getInstance().preventPortalSpawns.getValue()) {
+    if (NicerPortalsPerWorldConfig.getInstance().preventPortalSpawns.getValue()) {
       info.cancel();
     }
   }

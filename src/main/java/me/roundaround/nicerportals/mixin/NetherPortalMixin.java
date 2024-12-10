@@ -1,11 +1,13 @@
 package me.roundaround.nicerportals.mixin;
 
-import me.roundaround.nicerportals.config.NicerPortalsConfig;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import me.roundaround.nicerportals.config.NicerPortalsPerWorldConfig;
+import me.roundaround.nicerportals.util.ExpandedNetherPortal;
 import me.roundaround.nicerportals.util.HashSetQueue;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.NetherPortalBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
@@ -24,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Mixin(NetherPortal.class)
-public abstract class NetherPortalMixin {
+public abstract class NetherPortalMixin implements ExpandedNetherPortal {
   @Unique
   private boolean valid = false;
   @Unique
@@ -34,11 +36,11 @@ public abstract class NetherPortalMixin {
 
   @Final
   @Shadow
-  private WorldAccess world;
+  private Direction negativeDir;
 
   @Final
   @Shadow
-  private Direction negativeDir;
+  private BlockPos lowerCorner;
 
   @Final
   @Shadow
@@ -46,13 +48,12 @@ public abstract class NetherPortalMixin {
 
   @Inject(
       method = "method_30487(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;" +
-          "Lnet/minecraft/util/math/BlockPos;)Z", at = @At(value = "HEAD"), cancellable = true
+               "Lnet/minecraft/util/math/BlockPos;)Z", at = @At(value = "HEAD"), cancellable = true
   )
   private static void isValidFrameBlock(
       BlockState state, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> info
   ) {
-    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
-        !NicerPortalsConfig.getInstance().cryingObsidian.getValue()) {
+    if (!NicerPortalsPerWorldConfig.getInstance().cryingObsidian.getValue()) {
       return;
     }
 
@@ -61,59 +62,100 @@ public abstract class NetherPortalMixin {
     }
   }
 
-  @Inject(method = "<init>", at = @At(value = "TAIL"))
-  private void constructor(WorldAccess world, BlockPos startPos, Direction.Axis axis, CallbackInfo info) {
-    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
-        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
+  @ModifyReturnValue(
+      method = "getOnAxis", at = @At("RETURN")
+  )
+  private static NetherPortal checkPortalValidity(NetherPortal original, @Local(argsOnly = true) BlockView world) {
+    original.checkAreaForPortalValidity(world);
+    return original;
+  }
+
+  @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
+  private void isValid(CallbackInfoReturnable<Boolean> info) {
+    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
       return;
     }
 
-    // TODO: Look into caching the AreaHelper reference in the block somehow
-    valid = checkAreaForPortalValidity(startPos, axis);
+    info.setReturnValue(this.valid);
   }
 
-  @Unique
-  private boolean checkAreaForPortalValidity(BlockPos startPos, Direction.Axis axis) {
-    validPortalPositions.clear();
+  @Inject(
+      method = "createPortal", at = @At(
+      value = "INVOKE",
+      target = "Lnet/minecraft/util/math/BlockPos;iterate(Lnet/minecraft/util/math/BlockPos;" +
+               "Lnet/minecraft/util/math/BlockPos;)Ljava/lang/Iterable;"
+  ), cancellable = true
+  )
+  private void createPortal(WorldAccess world, CallbackInfo ci, @Local BlockState blockState) {
+    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+      return;
+    }
+
+    this.validPortalPositions.forEach(
+        (pos) -> world.setBlockState(pos, blockState, Block.NOTIFY_LISTENERS | Block.FORCE_STATE));
+
+    ci.cancel();
+  }
+
+  @Inject(method = "wasAlreadyValid", at = @At(value = "HEAD"), cancellable = true)
+  private void wasAlreadyValid(CallbackInfoReturnable<Boolean> info) {
+    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+      return;
+    }
+
+    info.setReturnValue(this.valid && this.validPortalPositions.size() == this.portalBlockCount);
+  }
+
+  @Override
+  public void checkAreaForPortalValidity(BlockView world) {
+    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+      return;
+    }
+
+    this.validPortalPositions.clear();
 
     HashSet<BlockPos> validFrameBlocks = new HashSet<>();
     HashSetQueue<BlockPos> positionsToCheck = new HashSetQueue<>();
     boolean minSizeFound = false;
 
-    List<Direction> directions = List.of(Direction.DOWN, Direction.UP, negativeDir, negativeDir.getOpposite());
+    List<Direction> directions = List.of(
+        Direction.DOWN, Direction.UP, this.negativeDir, this.negativeDir.getOpposite());
 
-    positionsToCheck.push(startPos);
+    positionsToCheck.push(this.lowerCorner);
 
     while (!positionsToCheck.isEmpty()) {
       BlockPos pos = positionsToCheck.pop();
-      if (validPortalPositions.contains(pos) || validFrameBlocks.contains(pos)) {
+      if (this.validPortalPositions.contains(pos) || validFrameBlocks.contains(pos)) {
         continue;
       }
 
-      boolean isOrCanBePortal = isValidPosForPortalBlock(pos);
-      boolean isFrameBlock = isValidFrameBlock(pos);
+      boolean isOrCanBePortal = this.isValidPosForPortalBlock(world, pos);
+      boolean isFrameBlock = this.isValidFrameBlock(world, pos);
 
       if (!isOrCanBePortal && !isFrameBlock) {
-        return false;
+        this.valid = false;
+        return;
       }
 
       if (isOrCanBePortal) {
-        validPortalPositions.add(pos);
-        if (validPortalPositions.size() > NicerPortalsConfig.getInstance().maxSize.getValue()) {
-          return false;
+        this.validPortalPositions.add(pos);
+        if (this.validPortalPositions.size() > NicerPortalsPerWorldConfig.getInstance().maxSize.getValue()) {
+          this.valid = false;
+          return;
         }
 
         if (world.getBlockState(pos).isOf(Blocks.NETHER_PORTAL)) {
-          portalBlockCount++;
+          this.portalBlockCount++;
         }
 
-        if (!minSizeFound && (validPortalPositions.contains(pos.up()) || validPortalPositions.contains(pos.down()))) {
+        if (!minSizeFound &&
+            (this.validPortalPositions.contains(pos.up()) || this.validPortalPositions.contains(pos.down()))) {
           minSizeFound = true;
         }
 
         directions.forEach((direction) -> {
           BlockPos neighborPos = pos.offset(direction);
-          if (!validPortalPositions.contains(neighborPos) && !validFrameBlocks.contains(neighborPos)) {
+          if (!this.validPortalPositions.contains(neighborPos) && !validFrameBlocks.contains(neighborPos)) {
             positionsToCheck.push(neighborPos);
           }
         });
@@ -122,51 +164,17 @@ public abstract class NetherPortalMixin {
       }
     }
 
-    return minSizeFound || !NicerPortalsConfig.getInstance().enforceMinimum.getValue();
+    this.valid = minSizeFound || !NicerPortalsPerWorldConfig.getInstance().enforceMinimum.getValue();
   }
 
   @Unique
-  private boolean isValidPosForPortalBlock(BlockPos pos) {
+  private boolean isValidPosForPortalBlock(BlockView world, BlockPos pos) {
     return NetherPortalAccessor.isValidStateInsidePortal(world.getBlockState(pos)) && !world.isOutOfHeightLimit(pos);
   }
 
   @Unique
-  private boolean isValidFrameBlock(BlockPos pos) {
+  private boolean isValidFrameBlock(BlockView world, BlockPos pos) {
     return NetherPortalAccessor.getIsValidFrameBlock().test(world.getBlockState(pos), world, pos) &&
-        !world.isOutOfHeightLimit(pos);
-  }
-
-  @Inject(method = "createPortal", at = @At(value = "HEAD"), cancellable = true)
-  private void createPortal(CallbackInfo info) {
-    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
-        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
-      return;
-    }
-
-    BlockState blockState = Blocks.NETHER_PORTAL.getDefaultState().with(NetherPortalBlock.AXIS, axis);
-    validPortalPositions.forEach(
-        (pos) -> world.setBlockState(pos, blockState, Block.NOTIFY_LISTENERS | Block.FORCE_STATE));
-
-    info.cancel();
-  }
-
-  @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
-  private void isValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
-        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
-      return;
-    }
-
-    info.setReturnValue(valid);
-  }
-
-  @Inject(method = "wasAlreadyValid", at = @At(value = "HEAD"), cancellable = true)
-  private void wasAlreadyValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
-        !NicerPortalsConfig.getInstance().anyShape.getValue()) {
-      return;
-    }
-
-    info.setReturnValue(valid && validPortalPositions.size() == portalBlockCount);
+           !world.isOutOfHeightLimit(pos);
   }
 }

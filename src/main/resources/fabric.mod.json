@@ -19,6 +19,9 @@
     "main": [
       "me.roundaround.nicerportals.NicerPortalsMod"
     ],
+    "client": [
+      "me.roundaround.nicerportals.client.NicerPortalsClientMod"
+    ],
     "modmenu": [
       "me.roundaround.nicerportals.compat.modmenu.ModMenuImpl"
     ]
@@ -26,8 +29,14 @@
   "mixins": [
     "nicerportals.mixins.json"
   ],
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/class_2424": [
+        "me/roundaround/nicerportals/util/ExpandedNetherPortal"
+      ]
+    }
+  },
   "depends": {
-    "fabricloader": ">=0.13.3",
     "minecraft": "1.21.*"
   }
 }

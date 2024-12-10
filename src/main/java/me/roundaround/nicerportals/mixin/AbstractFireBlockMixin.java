@@ -1,6 +1,6 @@
 package me.roundaround.nicerportals.mixin;
 
-import me.roundaround.nicerportals.config.NicerPortalsConfig;
+import me.roundaround.nicerportals.config.NicerPortalsPerWorldConfig;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -22,8 +22,7 @@ public abstract class AbstractFireBlockMixin {
   private static boolean hasFoundPortalBlock(
       boolean alreadyFoundPortalBlock, World world, BlockPos pos, Direction direction
   ) {
-    if (!NicerPortalsConfig.getInstance().modEnabled.getValue() ||
-        !NicerPortalsConfig.getInstance().cryingObsidian.getValue()) {
+    if (!NicerPortalsPerWorldConfig.getInstance().cryingObsidian.getValue()) {
       return alreadyFoundPortalBlock;
     }
 
