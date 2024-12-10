@@ -20,23 +20,24 @@ public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileS
   public BooleanConfigOption dedupeBreakSound;
 
   private NicerPortalsConfig() {
-    super(NicerPortalsMod.MOD_ID, "game", 2);
+    super(NicerPortalsMod.MOD_ID, "game", 3);
   }
 
   @Override
   protected void registerOptions() {
-    this.dedupeBreakSound = this.buildRegistration(
-        BooleanConfigOption.yesNoBuilder(ConfigPath.of("client", "dedupeBreakSound"))
-            .setDefaultValue(true)
-            .setComment("Whether to makes portals emit only one sound when they ", "break.", "Client-side only.")
-            .build()).clientOnly().commit();
+    this.dedupeBreakSound = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of("dedupeBreakSound"))
+        .setDefaultValue(true)
+        .setComment("Whether to makes portals emit only one sound when they ", "break.", "Client-side only.")
+        .build()).clientOnly().commit();
   }
 
   @Override
   public boolean performConfigUpdate(int versionSnapshot, Config inMemoryConfigSnapshot) {
-    if (versionSnapshot == 1) {
-      inMemoryConfigSnapshot.set("client.dedupeBreakSound", inMemoryConfigSnapshot.get("dedupeBreakSound"));
-      inMemoryConfigSnapshot.remove("dedupeBreakSound");
+    // Version 1 actually is the same as version 3. Go figure!
+
+    if (versionSnapshot == 2) {
+      inMemoryConfigSnapshot.set("dedupeBreakSound", inMemoryConfigSnapshot.get("client.dedupeBreakSound"));
+      inMemoryConfigSnapshot.remove("client.dedupeBreakSound");
 
       return true;
     }
