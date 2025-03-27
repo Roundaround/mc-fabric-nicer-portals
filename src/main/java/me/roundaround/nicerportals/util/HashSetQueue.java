@@ -3,6 +3,7 @@ package me.roundaround.nicerportals.util;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 
+@SuppressWarnings("unused")
 public class HashSetQueue<T> {
   private final HashSet<T> set = new HashSet<>();
   private final ArrayDeque<T> queue = new ArrayDeque<>();
@@ -11,31 +12,32 @@ public class HashSetQueue<T> {
   }
 
   public int size() {
-    return set.size();
+    return this.set.size();
   }
 
   public boolean isEmpty() {
-    return set.isEmpty();
+    return this.set.isEmpty();
   }
 
   public boolean contains(T elem) {
-    return set.contains(elem);
+    return this.set.contains(elem);
   }
 
+  @SuppressWarnings("UnusedReturnValue")
   public boolean push(T elem) {
-    if (!set.add(elem)) {
+    if (!this.set.add(elem)) {
       return false;
     }
-    queue.addFirst(elem);
+    this.queue.addFirst(elem);
     return true;
   }
 
   public T pop() {
-    T elem = queue.pollLast();
+    T elem = this.queue.pollLast();
     if (elem == null) {
       return null;
     }
-    set.remove(elem);
+    this.set.remove(elem);
     return elem;
   }
 }

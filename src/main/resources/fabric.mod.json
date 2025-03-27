@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "nicerportals",
+  "id": "${modId}",
   "version": "${version}",
   "name": "Nicer Portals",
   "description": "Various small improvements to portals.\n${library}",
@@ -13,30 +13,11 @@
     "issues": "https://github.com/Roundaround/mc-fabric-nicer-portals/issues"
   },
   "license": "MIT",
-  "icon": "assets/nicerportals/icon.png",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "me.roundaround.nicerportals.NicerPortalsMod"
-    ],
-    "client": [
-      "me.roundaround.nicerportals.client.NicerPortalsClientMod"
-    ],
-    "modmenu": [
-      "me.roundaround.nicerportals.compat.modmenu.ModMenuImpl"
-    ]
-  },
-  "mixins": [
-    "nicerportals.mixins.json"
-  ],
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_2424": [
         "me/roundaround/nicerportals/util/ExpandedNetherPortal"
       ]
     }
-  },
-  "depends": {
-    "minecraft": "1.21.*"
   }
 }

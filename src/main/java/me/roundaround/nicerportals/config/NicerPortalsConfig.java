@@ -1,11 +1,11 @@
 package me.roundaround.nicerportals.config;
 
-import me.roundaround.nicerportals.NicerPortalsMod;
-import me.roundaround.roundalib.config.ConfigPath;
-import me.roundaround.roundalib.config.manage.ModConfigImpl;
-import me.roundaround.roundalib.config.manage.store.GameScopedFileStore;
-import me.roundaround.roundalib.config.option.BooleanConfigOption;
-import me.roundaround.roundalib.nightconfig.core.Config;
+import me.roundaround.nicerportals.generated.Constants;
+import me.roundaround.nicerportals.roundalib.config.ConfigPath;
+import me.roundaround.nicerportals.roundalib.config.manage.ModConfigImpl;
+import me.roundaround.nicerportals.roundalib.config.manage.store.GameScopedFileStore;
+import me.roundaround.nicerportals.roundalib.config.option.BooleanConfigOption;
+import me.roundaround.nicerportals.roundalib.nightconfig.core.Config;
 
 public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileStore {
   public static NicerPortalsConfig instance = null;
@@ -20,7 +20,7 @@ public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileS
   public BooleanConfigOption dedupeBreakSound;
 
   private NicerPortalsConfig() {
-    super(NicerPortalsMod.MOD_ID, "game", 3);
+    super(Constants.MOD_ID, "game", 3);
   }
 
   @Override

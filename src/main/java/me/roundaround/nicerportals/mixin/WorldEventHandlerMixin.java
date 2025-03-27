@@ -34,7 +34,7 @@ public abstract class WorldEventHandlerMixin {
   )
   ), at = @At(
       value = "INVOKE",
-      target = "Lnet/minecraft/world/World;playSoundAtBlockCenter(Lnet/minecraft/util/math/BlockPos;" +
+      target = "Lnet/minecraft/world/World;playSoundAtBlockCenterClient(Lnet/minecraft/util/math/BlockPos;" +
                "Lnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FFZ)V"
   )
   )

@@ -1,11 +1,11 @@
 package me.roundaround.nicerportals.config;
 
-import me.roundaround.nicerportals.NicerPortalsMod;
-import me.roundaround.roundalib.config.ConfigPath;
-import me.roundaround.roundalib.config.manage.ModConfigImpl;
-import me.roundaround.roundalib.config.manage.store.WorldScopedFileStore;
-import me.roundaround.roundalib.config.option.BooleanConfigOption;
-import me.roundaround.roundalib.config.option.IntConfigOption;
+import me.roundaround.nicerportals.generated.Constants;
+import me.roundaround.nicerportals.roundalib.config.ConfigPath;
+import me.roundaround.nicerportals.roundalib.config.manage.ModConfigImpl;
+import me.roundaround.nicerportals.roundalib.config.manage.store.WorldScopedFileStore;
+import me.roundaround.nicerportals.roundalib.config.option.BooleanConfigOption;
+import me.roundaround.nicerportals.roundalib.config.option.IntConfigOption;
 
 public class NicerPortalsPerWorldConfig extends ModConfigImpl implements WorldScopedFileStore {
   public static NicerPortalsPerWorldConfig instance = null;
@@ -24,18 +24,17 @@ public class NicerPortalsPerWorldConfig extends ModConfigImpl implements WorldSc
   public BooleanConfigOption enforceMinimum;
 
   private NicerPortalsPerWorldConfig() {
-    super(NicerPortalsMod.MOD_ID, "world");
+    super(Constants.MOD_ID, "world");
   }
 
   @Override
   protected void registerOptions() {
-    this.preventPortalSpawns = this.buildRegistration(
-        BooleanConfigOption.yesNoBuilder(ConfigPath.of("preventPortalSpawns"))
-            .setDefaultValue(true)
-            .setComment("Whether to prevent portals from spawning Zombified", "Piglins in the overworld.",
-                "Server-side & single player only."
-            )
-            .build()).serverOrSinglePlayer().commit();
+    this.preventPortalSpawns = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
+        "preventPortalSpawns")).setDefaultValue(true).setComment(
+        "Whether to prevent portals from spawning Zombified",
+        "Piglins in the overworld.",
+        "Server-side & single player only."
+    ).build()).serverOrSinglePlayer().commit();
 
     this.cryingObsidian = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of("cryingObsidian"))
         .setDefaultValue(true)
@@ -49,18 +48,23 @@ public class NicerPortalsPerWorldConfig extends ModConfigImpl implements WorldSc
 
     this.maxSize = this.buildRegistration(IntConfigOption.builder(ConfigPath.of("maxSize"))
         .setDefaultValue(2304)
-        .setComment("The maximum allowed portal size to allow. Be warned",
+        .setComment(
+            "The maximum allowed portal size to allow. Be warned",
             "that setting values that are too large here could lag",
-            "or even crash the game. 2304 is the default and seems to", "cause only a small hiccup in come cases.",
-            "Note this value only has any effect if anyShape is true.", "Server-side & single player only."
+            "or even crash the game. 2304 is the default and seems to",
+            "cause only a small hiccup in come cases.",
+            "Note this value only has any effect if anyShape is true.",
+            "Server-side & single player only."
         )
         .build()).serverOrSinglePlayer().commit();
 
     this.enforceMinimum = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of("enforceMinimum"))
         .setDefaultValue(true)
-        .setComment("Require that portals are at least a 1x2 shape (can",
+        .setComment(
+            "Require that portals are at least a 1x2 shape (can",
             "walk through them). Set to false to allow 1x1 portals.",
-            "Note this value only has any effect if anyShape is true.", "Server-side & single player only."
+            "Note this value only has any effect if anyShape is true.",
+            "Server-side & single player only."
         )
         .build()).serverOrSinglePlayer().commit();
   }
