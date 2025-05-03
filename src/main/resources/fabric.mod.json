@@ -16,7 +16,7 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_2424": [
-        "me/roundaround/nicerportals/util/ExpandedNetherPortal"
+        "me/roundaround/nicerportals/util/NetherPortalExtensions"
       ]
     }
   }

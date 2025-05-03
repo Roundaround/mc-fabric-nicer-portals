@@ -3,7 +3,7 @@ package me.roundaround.nicerportals.mixin;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import me.roundaround.nicerportals.config.NicerPortalsPerWorldConfig;
-import me.roundaround.nicerportals.util.ExpandedNetherPortal;
+import me.roundaround.nicerportals.util.NetherPortalExtensions;
 import me.roundaround.nicerportals.util.HashSetQueue;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Mixin(NetherPortal.class)
-public abstract class NetherPortalMixin implements ExpandedNetherPortal {
+public abstract class NetherPortalMixin implements NetherPortalExtensions {
   @Unique
   private boolean valid = false;
   @Unique
@@ -42,16 +42,15 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
   @Shadow
   private BlockPos lowerCorner;
 
-  @Final
-  @Shadow
-  private Direction.Axis axis;
-
   @Inject(
       method = "method_30487(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;" +
                "Lnet/minecraft/util/math/BlockPos;)Z", at = @At(value = "HEAD"), cancellable = true
   )
   private static void isValidFrameBlock(
-      BlockState state, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> info
+      BlockState state,
+      BlockView world,
+      BlockPos pos,
+      CallbackInfoReturnable<Boolean> info
   ) {
     if (!NicerPortalsPerWorldConfig.getInstance().cryingObsidian.getValue()) {
       return;
@@ -65,9 +64,9 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
   @ModifyReturnValue(
       method = "getOnAxis", at = @At("RETURN")
   )
-  private static NetherPortal checkPortalValidity(NetherPortal original, @Local(argsOnly = true) BlockView world) {
-    original.checkAreaForPortalValidity(world);
-    return original;
+  private static NetherPortal checkPortalValidity(NetherPortal portal, @Local(argsOnly = true) BlockView world) {
+    portal.nicerportals$checkAreaForPortalValidity(world);
+    return portal;
   }
 
   @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
@@ -91,8 +90,11 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
       return;
     }
 
-    this.validPortalPositions.forEach(
-        (pos) -> world.setBlockState(pos, blockState, Block.NOTIFY_LISTENERS | Block.FORCE_STATE));
+    this.getValidPortalPositions().forEach((pos) -> world.setBlockState(
+        pos,
+        blockState,
+        Block.NOTIFY_LISTENERS | Block.FORCE_STATE
+    ));
 
     ci.cancel();
   }
@@ -103,29 +105,33 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
       return;
     }
 
-    info.setReturnValue(this.valid && this.validPortalPositions.size() == this.portalBlockCount);
+    info.setReturnValue(this.valid && this.getValidPortalPositions().size() == this.portalBlockCount);
   }
 
   @Override
-  public void checkAreaForPortalValidity(BlockView world) {
+  public void nicerportals$checkAreaForPortalValidity(BlockView world) {
     if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
       return;
     }
 
-    this.validPortalPositions.clear();
+    this.getValidPortalPositions().clear();
 
     HashSet<BlockPos> validFrameBlocks = new HashSet<>();
     HashSetQueue<BlockPos> positionsToCheck = new HashSetQueue<>();
     boolean minSizeFound = false;
 
     List<Direction> directions = List.of(
-        Direction.DOWN, Direction.UP, this.negativeDir, this.negativeDir.getOpposite());
+        Direction.DOWN,
+        Direction.UP,
+        this.negativeDir,
+        this.negativeDir.getOpposite()
+    );
 
     positionsToCheck.push(this.lowerCorner);
 
     while (!positionsToCheck.isEmpty()) {
       BlockPos pos = positionsToCheck.pop();
-      if (this.validPortalPositions.contains(pos) || validFrameBlocks.contains(pos)) {
+      if (this.getValidPortalPositions().contains(pos) || validFrameBlocks.contains(pos)) {
         continue;
       }
 
@@ -138,8 +144,8 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
       }
 
       if (isOrCanBePortal) {
-        this.validPortalPositions.add(pos);
-        if (this.validPortalPositions.size() > NicerPortalsPerWorldConfig.getInstance().maxSize.getValue()) {
+        this.getValidPortalPositions().add(pos);
+        if (this.getValidPortalPositions().size() > NicerPortalsPerWorldConfig.getInstance().maxSize.getValue()) {
           this.valid = false;
           return;
         }
@@ -149,13 +155,13 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
         }
 
         if (!minSizeFound &&
-            (this.validPortalPositions.contains(pos.up()) || this.validPortalPositions.contains(pos.down()))) {
+            (this.getValidPortalPositions().contains(pos.up()) || this.getValidPortalPositions().contains(pos.down()))) {
           minSizeFound = true;
         }
 
         directions.forEach((direction) -> {
           BlockPos neighborPos = pos.offset(direction);
-          if (!this.validPortalPositions.contains(neighborPos) && !validFrameBlocks.contains(neighborPos)) {
+          if (!this.getValidPortalPositions().contains(neighborPos) && !validFrameBlocks.contains(neighborPos)) {
             positionsToCheck.push(neighborPos);
           }
         });
@@ -165,6 +171,14 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
     }
 
     this.valid = minSizeFound || !NicerPortalsPerWorldConfig.getInstance().enforceMinimum.getValue();
+  }
+
+  @Unique
+  private HashSet<BlockPos> getValidPortalPositions() {
+    if (this.validPortalPositions == null) {
+      this.validPortalPositions = new HashSet<>();
+    }
+    return this.validPortalPositions;
   }
 
   @Unique
