@@ -1,0 +1,11 @@
+{
+  "nicerportals.config.title": "更好的地狱门设配置",
+  "nicerportals.mod_enabled.label": "启用模组",
+  "nicerportals.dedupe_break_sound.label": "地狱门破碎声去重",
+  "nicerportals.single.title": "仅客户端",
+  "nicerportals.prevent_portal_spawns.label": "禁止传送门内生物生成",
+  "nicerportals.crying_obsidian.label": "允许使用哭泣的黑曜石",
+  "nicerportals.any_shape.label": "允许任意地狱门形状",
+  "nicerportals.max_size.label": "最多地狱门方块使用量",
+  "nicerportals.enforce_minimum.label": "需要至少1格宽2格高"
+}
