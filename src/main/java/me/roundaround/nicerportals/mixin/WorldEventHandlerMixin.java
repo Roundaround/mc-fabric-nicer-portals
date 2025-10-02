@@ -5,11 +5,11 @@ import me.roundaround.nicerportals.client.PortalBreakTracker;
 import me.roundaround.nicerportals.config.NicerPortalsConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.world.WorldEventHandler;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.Slice;
 public abstract class WorldEventHandlerMixin {
   @Shadow
   @Final
-  private World world;
+  private ClientWorld world;
 
   @WrapWithCondition(
       method = "processWorldEvent", slice = @Slice(
@@ -29,17 +29,18 @@ public abstract class WorldEventHandlerMixin {
           target = "Lnet/minecraft/block/BlockState;getSoundGroup()Lnet/minecraft/sound/BlockSoundGroup;"
       ), to = @At(
       value = "INVOKE",
-      target = "Lnet/minecraft/world/World;addBlockBreakParticles(Lnet/minecraft/util/math/BlockPos;" +
+      target = "Lnet/minecraft/client/world/ClientWorld;addBlockBreakParticles(Lnet/minecraft/util/math/BlockPos;" +
                "Lnet/minecraft/block/BlockState;)V"
   )
   ), at = @At(
       value = "INVOKE",
-      target = "Lnet/minecraft/world/World;playSoundAtBlockCenterClient(Lnet/minecraft/util/math/BlockPos;" +
-               "Lnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FFZ)V"
+      target = "Lnet/minecraft/client/world/ClientWorld;playSoundAtBlockCenterClient" +
+               "(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/sound/SoundEvent;" +
+               "Lnet/minecraft/sound/SoundCategory;FFZ)V"
   )
   )
   private boolean onlyPlayFirstSound(
-      World instance,
+      ClientWorld instance,
       BlockPos pos,
       SoundEvent sound,
       SoundCategory category,

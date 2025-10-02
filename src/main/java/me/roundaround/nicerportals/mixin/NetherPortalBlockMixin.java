@@ -10,10 +10,12 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class NetherPortalBlockMixin {
   @ModifyExpressionValue(
       method = "randomTick", at = @At(
-      value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z"
+      value = "INVOKE",
+      target = "Lnet/minecraft/block/BlockState;allowsSpawning(Lnet/minecraft/world/BlockView;" +
+               "Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/EntityType;)Z"
   )
   )
-  private boolean canSpawnZombifiedPiglins(boolean gameRuleAllowsSpawning) {
-    return gameRuleAllowsSpawning && !NicerPortalsPerWorldConfig.getInstance().preventPortalSpawns.getValue();
+  private boolean canSpawnZombifiedPiglins(boolean originalValue) {
+    return originalValue && !NicerPortalsPerWorldConfig.getInstance().preventPortalSpawns.getValue();
   }
 }
