@@ -1,8 +1,8 @@
 ![Nicer Portals](https://imgur.com/KRkBCMD.png)
 
-![](https://img.shields.io/badge/Loader-Fabric-%23313e51?style=for-the-badge)
-![](https://img.shields.io/badge/MC-26.1--26.1.1%20|%201.21%20|%201.20%20|%201.19%20|%201.18.2-%23313e51?style=for-the-badge)
-![](https://img.shields.io/badge/Side-Client%20&%20Server-%23313e51?style=for-the-badge)
+![](https://img.shields.io/badge/Loader-Fabric-313e51?style=for-the-badge)
+![](https://img.shields.io/badge/MC-26.1--26.1.1%20|%201.21%20|%201.20%20|%201.19%20|%201.18.2-313e51?style=for-the-badge)
+![](https://img.shields.io/badge/Side-Client%20&%20Server-313e51?style=for-the-badge)
 
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/nicer-portals?style=flat&logo=modrinth&color=00AF5C)](https://modrinth.com/mod/nicer-portals)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1501935?style=flat&logo=curseforge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/nicer-portals)
