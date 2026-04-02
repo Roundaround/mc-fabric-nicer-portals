@@ -5,6 +5,7 @@
 ![](https://img.shields.io/badge/Side-Client%20&%20Server-%23313e51?style=for-the-badge)
 
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/nicer-portals?style=flat&logo=modrinth&color=00AF5C)](https://modrinth.com/mod/nicer-portals)
+[![CurseForge Downloads](https://img.shields.io/curseforge/dt/1501935?style=flat&logo=curseforge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/nicer-portals)
 [![GitHub Repo stars](https://img.shields.io/github/stars/Roundaround/mc-fabric-nicer-portals?style=flat&logo=github)](https://github.com/Roundaround/mc-fabric-nicer-portals)
 
 [![Support me on Ko-fi](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/donate/kofi-singular-alt_vector.svg)](https://ko-fi.com/roundaround)
