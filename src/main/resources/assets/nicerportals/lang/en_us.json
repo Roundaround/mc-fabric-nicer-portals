@@ -5,7 +5,7 @@
   "nicerportals.dedupeBreakSound.label": "Dedupe break sound",
   "nicerportals.world.title": "Specific to this world",
   "nicerportals.preventPortalSpawns.label": "Prevent portal spawns",
-  "nicerportals.cryingObsidian.label": "Allow crying obsidian",
+  "nicerportals.portalFrameTag.label": "Use block tag for frame checks",
   "nicerportals.anyShape.label": "Allow any portal shape",
   "nicerportals.maxSize.label": "Maximum number of portal blocks",
   "nicerportals.enforceMinimum.label": "Require at least 1 wide x 2 tall"

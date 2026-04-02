@@ -6,7 +6,7 @@ import me.roundaround.gradle.api.annotation.Entrypoint;
 import me.roundaround.nicerportals.config.NicerPortalsConfig;
 import me.roundaround.nicerportals.config.NicerPortalsPerWorldConfig;
 import me.roundaround.nicerportals.generated.Constants;
-import me.roundaround.nicerportals.roundalib.client.gui.screen.ConfigScreen;
+import me.roundaround.roundalib.client.gui.screen.ConfigScreen;
 
 @Entrypoint(Entrypoint.MOD_MENU)
 public class ModMenuImpl implements ModMenuApi {

@@ -3,7 +3,7 @@
   "id": "${modId}",
   "version": "${version}",
   "name": "Nicer Portals",
-  "description": "Various small improvements to portals.\n${library}",
+  "description": "Various small improvements to portals.",
   "authors": [
     "Roundaround"
   ],
@@ -15,7 +15,7 @@
   "license": "MIT",
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/class_2424": [
+      "net/minecraft/world/level/portal/PortalShape": [
         "me/roundaround/nicerportals/util/NetherPortalExtensions"
       ]
     }

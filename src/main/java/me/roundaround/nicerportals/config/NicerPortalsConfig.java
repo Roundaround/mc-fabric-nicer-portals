@@ -1,11 +1,11 @@
 package me.roundaround.nicerportals.config;
 
 import me.roundaround.nicerportals.generated.Constants;
-import me.roundaround.nicerportals.roundalib.config.ConfigPath;
-import me.roundaround.nicerportals.roundalib.config.manage.ModConfigImpl;
-import me.roundaround.nicerportals.roundalib.config.manage.store.GameScopedFileStore;
-import me.roundaround.nicerportals.roundalib.config.option.BooleanConfigOption;
-import me.roundaround.nicerportals.roundalib.nightconfig.core.Config;
+import me.roundaround.roundalib.config.ConfigPath;
+import me.roundaround.roundalib.config.io.ConfigDoc;
+import me.roundaround.roundalib.config.manage.ModConfigImpl;
+import me.roundaround.roundalib.config.manage.store.GameScopedFileStore;
+import me.roundaround.roundalib.config.option.BooleanConfigOption;
 
 public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileStore {
   public static NicerPortalsConfig instance = null;
@@ -32,7 +32,7 @@ public class NicerPortalsConfig extends ModConfigImpl implements GameScopedFileS
   }
 
   @Override
-  public boolean performConfigUpdate(int versionSnapshot, Config inMemoryConfigSnapshot) {
+  public boolean performConfigUpdate(int versionSnapshot, ConfigDoc inMemoryConfigSnapshot) {
     // Version 1 actually is the same as version 3. Go figure!
 
     if (versionSnapshot == 2) {

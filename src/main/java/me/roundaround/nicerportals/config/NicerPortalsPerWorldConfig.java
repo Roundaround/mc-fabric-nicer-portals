@@ -1,11 +1,12 @@
 package me.roundaround.nicerportals.config;
 
 import me.roundaround.nicerportals.generated.Constants;
-import me.roundaround.nicerportals.roundalib.config.ConfigPath;
-import me.roundaround.nicerportals.roundalib.config.manage.ModConfigImpl;
-import me.roundaround.nicerportals.roundalib.config.manage.store.WorldScopedFileStore;
-import me.roundaround.nicerportals.roundalib.config.option.BooleanConfigOption;
-import me.roundaround.nicerportals.roundalib.config.option.IntConfigOption;
+import me.roundaround.roundalib.config.ConfigPath;
+import me.roundaround.roundalib.config.io.ConfigDoc;
+import me.roundaround.roundalib.config.manage.ModConfigImpl;
+import me.roundaround.roundalib.config.manage.store.WorldScopedFileStore;
+import me.roundaround.roundalib.config.option.BooleanConfigOption;
+import me.roundaround.roundalib.config.option.IntConfigOption;
 
 public class NicerPortalsPerWorldConfig extends ModConfigImpl implements WorldScopedFileStore {
   public static NicerPortalsPerWorldConfig instance = null;
@@ -18,7 +19,7 @@ public class NicerPortalsPerWorldConfig extends ModConfigImpl implements WorldSc
   }
 
   public BooleanConfigOption preventPortalSpawns;
-  public BooleanConfigOption cryingObsidian;
+  public BooleanConfigOption portalFrameTag;
   public BooleanConfigOption anyShape;
   public IntConfigOption maxSize;
   public BooleanConfigOption enforceMinimum;
@@ -36,9 +37,13 @@ public class NicerPortalsPerWorldConfig extends ModConfigImpl implements WorldSc
         "Server-side & single player only."
     ).build()).serverOrSinglePlayer().commit();
 
-    this.cryingObsidian = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of("cryingObsidian"))
+    this.portalFrameTag = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of("portalFrameTag"))
         .setDefaultValue(true)
-        .setComment("Whether to allow using crying obsidian for portals.", "Server-side & single player only.")
+        .setComment(
+            "Whether to replace portal frame block checks with",
+            "the #nicerportals:portal_frame tag.",
+            "Server-side & single player only."
+        )
         .build()).serverOrSinglePlayer().commit();
 
     this.anyShape = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of("anyShape"))
@@ -67,5 +72,17 @@ public class NicerPortalsPerWorldConfig extends ModConfigImpl implements WorldSc
             "Server-side & single player only."
         )
         .build()).serverOrSinglePlayer().commit();
+  }
+
+  @Override
+  public boolean performConfigUpdate(int versionSnapshot, ConfigDoc inMemoryConfigSnapshot) {
+    if (versionSnapshot == 1) {
+      inMemoryConfigSnapshot.set("portalFrameTag", inMemoryConfigSnapshot.get("cryingObsidian"));
+      inMemoryConfigSnapshot.remove("cryingObsidian");
+
+      return true;
+    }
+
+    return false;
   }
 }
