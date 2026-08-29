@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,6 +36,14 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
   @Unique
   int portalBlockCount = 0;
 
+  // True only once the flood fill below has actually run, which takes both a logical server and
+  // anyShape. Every hook that has no level to test keys off this instead of re-reading the config,
+  // so on the logical client they all fall through to vanilla and the per-world config is never
+  // touched there at all. The client has no world directory to load one from, so its values would
+  // be a guess at the server's; vanilla's own rules are the honest fallback. See GH-16.
+  @Unique
+  private boolean scanned = false;
+
   @Final
   @Shadow
   private Direction rightDir;
@@ -42,6 +51,14 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
   @Final
   @Shadow
   private BlockPos bottomLeft;
+
+  // PortalShape is handed a bare BlockGetter, so the logical side has to come off the level it was
+  // given. Nothing that isn't a LevelReader reaches these paths in vanilla; treat that case as the
+  // server so an unexpected caller keeps the mod's rules rather than silently losing them.
+  @Unique
+  private static boolean nicerportals$isLogicalClient(BlockGetter world) {
+    return world instanceof LevelReader reader && reader.isClientSide();
+  }
 
   @Inject(
       method = "lambda$static$0", at = @At(value = "HEAD"), cancellable = true
@@ -52,7 +69,8 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
       BlockPos pos,
       CallbackInfoReturnable<Boolean> info
   ) {
-    if (!NicerPortalsPerWorldConfig.getInstance().portalFrameTag.getValue()) {
+    if (nicerportals$isLogicalClient(world) ||
+        !NicerPortalsPerWorldConfig.getInstance().portalFrameTag.getValue()) {
       return;
     }
     info.setReturnValue(state.is(BlockTags.PORTAL_FRAME));
@@ -68,7 +86,7 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
 
   @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
   private void isValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    if (!this.scanned) {
       return;
     }
     info.setReturnValue(this.valid);
@@ -81,7 +99,7 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
   ), cancellable = true
   )
   private void createPortal(LevelAccessor world, CallbackInfo ci, @Local BlockState portalState) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    if (!this.scanned) {
       return;
     }
 
@@ -96,7 +114,7 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
 
   @Inject(method = "isComplete", at = @At(value = "HEAD"), cancellable = true)
   private void wasAlreadyValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    if (!this.scanned) {
       return;
     }
 
@@ -105,10 +123,13 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
 
   @Override
   public void nicerportals$checkAreaForPortalValidity(BlockGetter world) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    this.scanned = false;
+
+    if (nicerportals$isLogicalClient(world) || !NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
       return;
     }
 
+    this.scanned = true;
     this.getValidPortalPositions().clear();
 
     HashSet<BlockPos> validFrameBlocks = new HashSet<>();
