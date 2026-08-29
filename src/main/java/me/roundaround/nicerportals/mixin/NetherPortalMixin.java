@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 import net.minecraft.world.dimension.NetherPortal;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,6 +35,14 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
   @Unique
   int portalBlockCount = 0;
 
+  // True only once the flood fill below has actually run, which takes both a logical server and
+  // anyShape. Every hook that has no world to test keys off this instead of re-reading the config,
+  // so on the logical client they all fall through to vanilla and the per-world config is never
+  // touched there at all. The client has no world directory to load one from, so its values would
+  // be a guess at the server's; vanilla's own rules are the honest fallback. See GH-16.
+  @Unique
+  private boolean scanned = false;
+
   @Final
   @Shadow
   private Direction negativeDir;
@@ -46,6 +55,14 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
   @Shadow
   private Direction.Axis axis;
 
+  // NetherPortal is handed a bare BlockView, so the logical side has to come off the world it was
+  // given. Nothing that isn't a WorldView reaches these paths in vanilla; treat that case as the
+  // server so an unexpected caller keeps the mod's rules rather than silently losing them.
+  @Unique
+  private static boolean nicerportals$isLogicalClient(BlockView world) {
+    return world instanceof WorldView view && view.isClient();
+  }
+
   @Inject(
       method = "method_30487(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;" +
                "Lnet/minecraft/util/math/BlockPos;)Z", at = @At(value = "HEAD"), cancellable = true
@@ -53,7 +70,8 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
   private static void isValidFrameBlock(
       BlockState state, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> info
   ) {
-    if (!NicerPortalsPerWorldConfig.getInstance().cryingObsidian.getValue()) {
+    if (nicerportals$isLogicalClient(world) ||
+        !NicerPortalsPerWorldConfig.getInstance().cryingObsidian.getValue()) {
       return;
     }
 
@@ -72,7 +90,7 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
 
   @Inject(method = "isValid", at = @At(value = "HEAD"), cancellable = true)
   private void isValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    if (!this.scanned) {
       return;
     }
 
@@ -87,7 +105,7 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
   ), cancellable = true
   )
   private void createPortal(WorldAccess world, CallbackInfo ci, @Local BlockState blockState) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    if (!this.scanned) {
       return;
     }
 
@@ -99,7 +117,7 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
 
   @Inject(method = "wasAlreadyValid", at = @At(value = "HEAD"), cancellable = true)
   private void wasAlreadyValid(CallbackInfoReturnable<Boolean> info) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    if (!this.scanned) {
       return;
     }
 
@@ -108,10 +126,13 @@ public abstract class NetherPortalMixin implements ExpandedNetherPortal {
 
   @Override
   public void checkAreaForPortalValidity(BlockView world) {
-    if (!NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
+    this.scanned = false;
+
+    if (nicerportals$isLogicalClient(world) || !NicerPortalsPerWorldConfig.getInstance().anyShape.getValue()) {
       return;
     }
 
+    this.scanned = true;
     this.validPortalPositions.clear();
 
     HashSet<BlockPos> validFrameBlocks = new HashSet<>();
