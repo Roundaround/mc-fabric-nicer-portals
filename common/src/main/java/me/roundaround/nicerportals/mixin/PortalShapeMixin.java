@@ -15,6 +15,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.PortalShape;
 import me.roundaround.nicerportals.util.HashSetQueue;
@@ -66,9 +67,11 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
   // Tag-ifies the vanilla rectangle path's frame check (only reached when anyShape is off). 26.3's
   // FRAME is a plain Predicate<BlockState>, so the side check happens where it is invoked — the
   // static scanners all carry the BlockGetter — instead of inside the (world-less) lambda.
+  // require = 0: Forge binpatches these scanners onto FRAME_TEST, handled by the StatePredicate wrap below.
   @WrapOperation(
       method = {"getDistanceUntilEdgeAboveFrame", "hasTopFrame", "getDistanceUntilTop"},
-      at = @At(value = "INVOKE", target = "Ljava/util/function/Predicate;test(Ljava/lang/Object;)Z")
+      at = @At(value = "INVOKE", target = "Ljava/util/function/Predicate;test(Ljava/lang/Object;)Z"),
+      require = 0
   )
   private static boolean isValidFrameBlock(
       Predicate<BlockState> frame,
@@ -81,6 +84,28 @@ public abstract class PortalShapeMixin implements NetherPortalExtensions {
       return original.call(frame, state);
     }
     return ((BlockState) state).is(BlockTags.PORTAL_FRAME);
+  }
+
+  @WrapOperation(
+      method = {"getDistanceUntilEdgeAboveFrame", "hasTopFrame", "getDistanceUntilTop"},
+      at = @At(
+          value = "INVOKE",
+          target = "Lnet/minecraft/world/level/block/state/BlockBehaviour$StatePredicate;test(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z"
+      ),
+      require = 0
+  )
+  private static boolean isValidFrameBlockForge(
+      BlockBehaviour.StatePredicate frame,
+      BlockState state,
+      BlockGetter world,
+      BlockPos pos,
+      Operation<Boolean> original
+  ) {
+    if (nicerportals$isLogicalClient(world) ||
+        !NicerPortalsPerWorldConfig.getInstance().portalFrameTag.getValue()) {
+      return original.call(frame, state, world, pos);
+    }
+    return state.is(BlockTags.PORTAL_FRAME);
   }
 
   @ModifyReturnValue(
